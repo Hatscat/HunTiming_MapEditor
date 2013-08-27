@@ -1,10 +1,9 @@
-String map_name;
+String map_url;
 PImage map_picture;
 int map_size, map_width, map_height;
 color wall_color, tower_color, spawnTeam1_color, spawnTeam2_color;
 byte version, path_value, wall_value, tower_value, spawnTeam1_value, spawnTeam2_value;
 byte[] px;
-boolean canPressAKey, isEnterPressed, isErrorMsg;
 
 void setup() {
   
@@ -20,39 +19,33 @@ void setup() {
   tower_value = 2;
   spawnTeam1_value = 3;
   spawnTeam2_value = 4;
-  canPressAKey = true;
-  isEnterPressed = false;
-  isErrorMsg = false;
-  map_name = "";
   
   map_size = map_width * map_height;
   size(map_width, map_height);
   px = new byte[map_size+1];
   
+  selectInput("Select a file to process : ", "fileSelected");
 }
+
+void fileSelected(File selection) {
+  
+  if (selection == null) exit();
+  else
+  {
+    map_url = selection.getAbsolutePath();
+    map_picture = loadImage(map_url);
+    if (map_picture == null) exit();
+  }
+}
+
 
 void draw() {
   
-  background(255);
-  fill(0);
-  text("Map file name (whithout \".png\" extension)  : ", 50, 50);
-  text(map_name, 300, 50);
-  fill(255,0,0);
-  if (isErrorMsg) text("ERROR : This file is missing or inaccessible. Make sure the URL is valid.", 75, 75);
-  
-  map_name = writeString(map_name);
-  
-  if (isEnterPressed)
+  if (map_picture != null)
   {
-    isEnterPressed = false;
-    map_picture = loadImage(map_name + ".png");
-    
-    if (map_picture != null)
-    {
-      image(map_picture, 0, 0);
-      if (recordData()) exit();
-    }
-    else isErrorMsg = true;
+    image(map_picture, 0, 0);
+    if (recordData()) exit();
+    else background(255, 0, 0);
   }
 }
 
@@ -70,28 +63,7 @@ boolean recordData() {
     else px[i+1] = path_value;
   }
   
-  saveBytes(map_name + ".dat", px);
+  saveBytes(map_url.substring(0, map_url.indexOf(".")) + ".dat", px);
   return true;
-}
-
-String writeString(String s) {
-  
-  if (keyPressed && canPressAKey)
-  {
-    canPressAKey = false;
-    isErrorMsg = false;
-    if (key != CODED)
-    {
-      if (key == RETURN || key == ENTER) isEnterPressed = true;
-      else if (key == BACKSPACE && s.length() > 0) s = s.substring(0, s.length() - 1);
-      else if (key != BACKSPACE) s += key;
-    }
-  }
-  return s;
-}
-
-void keyReleased() {
-  
-  canPressAKey = true;
 }
 
